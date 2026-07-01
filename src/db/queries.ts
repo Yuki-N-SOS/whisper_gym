@@ -5,6 +5,19 @@ import { EXERCISE_SEED } from "../parser/exercises";
 import type { DictionaryEntry } from "../parser/parse";
 import { db, type Exercise, type WorkoutSet } from "./db";
 
+/**
+ * ローカル時刻の ISO8601(タイムゾーン表記なし)。
+ * performedAt は「ユーザーの体感の日付」で日別集計するため、UTC ではなくこれを使う。
+ * toISOString()(UTC)だと日本時間の朝 9 時前の記録が前日扱いになる。
+ */
+function localISO(d: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  );
+}
+
 /** 初回起動時に種目辞書のシードを投入する(投入済みなら何もしない) */
 export async function seedIfEmpty(): Promise<void> {
   const count = await db.exercises.count();
@@ -56,14 +69,13 @@ export async function addSet(input: {
   rawText: string | null;
   performedAt?: string;
 }): Promise<number> {
-  const now = new Date().toISOString();
   return db.sets.add({
     exerciseId: input.exerciseId,
     weightKg: input.weightKg,
     reps: input.reps,
     rawText: input.rawText,
-    performedAt: input.performedAt ?? now,
-    createdAt: now
+    performedAt: input.performedAt ?? localISO(),
+    createdAt: new Date().toISOString()
   });
 }
 
@@ -71,7 +83,7 @@ export async function addSet(input: {
 export async function listSetsByDate(date: string): Promise<WorkoutSet[]> {
   return db.sets
     .where("performedAt")
-    .between(`${date}T00:00:00`, `${date}T23:59:59.999Z`, true, true)
+    .between(`${date}T00:00:00`, `${date}T23:59:59.999`, true, true)
     .toArray();
 }
 

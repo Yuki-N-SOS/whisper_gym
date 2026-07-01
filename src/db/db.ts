@@ -23,7 +23,7 @@ export interface WorkoutSet {
   exerciseId: number;
   weightKg: number | null; // 自重種目は null
   reps: number;
-  performedAt: string; // ISO8601。日別表示はこれで集計
+  performedAt: string; // ローカル時刻の ISO8601(TZ 表記なし)。日別表示はこれで集計
   rawText: string | null; // 認識テキスト原文(デバッグ・辞書改善用)
   createdAt: string;
 }
