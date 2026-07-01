@@ -1,0 +1,153 @@
+:root {
+  color-scheme: dark;
+  --bg: #111827;
+  --card: #1f2937;
+  --border: #374151;
+  --text: #f9fafb;
+  --muted: #9ca3af;
+  --accent: #f97316;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Hiragino Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.content {
+  flex: 1;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+.screen {
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 16px;
+}
+
+h2 {
+  font-size: 1rem;
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.set-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.set-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.set-list li:last-child {
+  border-bottom: none;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  margin: 8px 0;
+}
+
+button {
+  font-size: 1rem;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+}
+
+button:disabled {
+  background: var(--border);
+  color: var(--muted);
+}
+
+.record-button {
+  display: block;
+  width: 100%;
+  padding: 20px;
+  font-size: 1.1rem;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.parse-result {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.parse-result button {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.message {
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab {
+  flex: 1;
+  padding: 14px 0;
+  background: none;
+  color: var(--muted);
+  border-radius: 0;
+}
+
+.tab.active {
+  color: var(--accent);
+  font-weight: 600;
+}

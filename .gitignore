@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dev-dist/
+*.local
+.vite/
+coverage/
+
+# エディタ・OS
+.DS_Store
+Thumbs.db
