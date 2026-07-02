@@ -21,10 +21,10 @@ PC 上の開発は `npm run dev` + ブラウザで行う(パーサー・UI・DB 
 
 ### フェーズ 0: 環境構築
 
-- [ ] Vite + React + TypeScript(strict)プロジェクト作成
-- [ ] Vitest セットアップ、型チェック・ビルドが通ることを確認
-- [ ] git リポジトリ初期化、`.gitignore` 整備
-- [ ] 4 タブの画面骨格(記録/履歴/種目/設定)と Dexie スキーマ
+- [x] Vite + React + TypeScript(strict)プロジェクト作成
+- [x] Vitest セットアップ、型チェック・ビルドが通ることを確認
+- [x] git リポジトリ初期化、`.gitignore` 整備
+- [x] 4 タブの画面骨格(記録/履歴/種目/設定)と Dexie スキーマ
 
 ### フェーズ 1: 技術検証(最大のリスクを先に潰す)
 
@@ -32,7 +32,8 @@ PC 上の開発は `npm run dev` + ブラウザで行う(パーサー・UI・DB 
 かかっている。UI を作り込む前にここを検証する。
 
 - [ ] GitHub リポジトリ作成 + Pages 自動デプロイ(GitHub Actions)
-- [ ] transformers.js を組み込み、whisper-base / kotoba-whisper 系 / whisper-small を
+      (ワークフロー `.github/workflows/deploy.yml` は作成済み。リポジトリ作成と push が残)
+- [x] transformers.js を組み込み、whisper-base / kotoba-whisper 系 / whisper-small を
       切り替えられる検証画面を作る
 - [ ] iPhone 実機で、ジムを想定したささやき声の認識率・処理時間・メモリ挙動を計測
 - [ ] 比較ベースラインとして Web Speech API(iOS の無料音声認識)も同じ発話で計測

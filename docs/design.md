@@ -77,8 +77,17 @@
 | モデル | サイズ(量子化後目安) | 備考 |
 |---|---|---|
 | onnx-community/whisper-base | 約 60MB | 多言語。第一候補 |
-| onnx-community/kotoba-whisper 系 | 約 100〜150MB | 日本語特化 distil-whisper。精度期待大 |
+| onnx-community/kotoba-whisper-v2.2-ONNX | 約 100〜150MB | 日本語特化 distil-whisper。精度期待大 |
 | onnx-community/whisper-small | 約 190MB | 精度は高いが iPhone Safari のメモリと相談 |
+
+量子化は **q4 を既定**とする。q8 は transformers.js 4.2.0 同梱の onnxruntime で
+セッション作成に失敗することを PC の Chrome(WASM)で確認済み
+(`Missing required scale ... MatMulNBits`。whisper-base の q4 は DL 約 138MB で動作確認済み)。
+
+検証はアプリ内の「検証」タブ(フェーズ 1 の暫定画面)で行う。モデル・実行方式
+(WASM/WebGPU)・量子化(q8/q4/fp32)を切り替えて読み込み時間・認識時間・認識結果を
+その場で計測でき、認識テキストはパーサーにも通して種目+数値の抽出可否を確認できる。
+採用モデル決定後にこのタブは削除する。
 
 - モデルは Hugging Face から初回に無料ダウンロードし、ブラウザのキャッシュに保存
   (transformers.js が自動でやる)。アプリ本体には同梱しない

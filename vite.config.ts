@@ -24,11 +24,18 @@ export default defineConfig({
       },
       workbox: {
         // Whisper モデル本体は transformers.js が Cache Storage に保存するため
-        // Service Worker のプリキャッシュ対象はアプリ本体のみ
-        globPatterns: ["**/*.{js,css,html,svg,png,woff2}"]
+        // Service Worker のプリキャッシュ対象はアプリ本体のみ。
+        // ただし onnxruntime の WASM(約24MB)は推論に必須なので、
+        // オフライン動作(機内モード・ジムの圏外)のためにプリキャッシュに含める
+        globPatterns: ["**/*.{js,css,html,svg,png,woff2,wasm}"],
+        maximumFileSizeToCacheInBytes: 30 * 1024 * 1024
       }
     })
   ],
+  // onnxruntime-web(transformers.js 内部)は Vite の依存事前バンドルと相性が悪いため除外
+  optimizeDeps: {
+    exclude: ["@huggingface/transformers"]
+  },
   test: {
     environment: "node"
   }
