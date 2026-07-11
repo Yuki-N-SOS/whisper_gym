@@ -32,7 +32,10 @@ PC 上の開発は `npm run dev` + ブラウザで行う(パーサー・UI・DB 
 かかっている。UI を作り込む前にここを検証する。
 
 - [x] GitHub Actions デプロイワークフロー作成(`.github/workflows/deploy.yml`)
-- [ ] GitHub リポジトリ作成 + Pages 自動デプロイ(push が残)
+- [x] GitHub リポジトリ + Pages 自動デプロイ(2026-07-11 公開)
+      公開 URL: https://yuki-n-sos.github.io/whisper_gym/
+      無料枠の都合でリポジトリは public。データは端末内(IndexedDB)のみで公開されない。
+      コミット履歴の作者メールは noreply へ匿名化済み。
 - [x] transformers.js を組み込み、whisper-tiny / base / small を切り替えられる検証画面を作る
       (kotoba-whisper 系は実サイズ判明により候補から除外。design.md §6 参照)
 - [ ] iPhone 実機で、ジムを想定したささやき声の認識率・処理時間・メモリ挙動を
