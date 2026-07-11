@@ -39,3 +39,10 @@ db.version(1).stores({
   exerciseAliases: "++id, exerciseId, &alias",
   sets: "++id, exerciseId, performedAt"
 });
+
+// v2: [exerciseId+performedAt] 複合インデックスを追加。
+// 前回参照(F5)を「performedAt 順の最後」で正しく引くため
+// (主キー順の last() だと、過去分を後から入力したときに「前回」がずれる)
+db.version(2).stores({
+  sets: "++id, exerciseId, performedAt, [exerciseId+performedAt]"
+});

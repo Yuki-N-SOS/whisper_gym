@@ -19,8 +19,11 @@ export default defineConfig({
         orientation: "portrait",
         background_color: "#111827",
         theme_color: "#111827",
-        // TODO(フェーズ5): アイコン画像を追加する
-        icons: []
+        // 仮アイコン(フェーズ1のホーム画面検証用。本アイコンはフェーズ5で差し替え)
+        icons: [
+          { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "any" }
+        ]
       },
       workbox: {
         // Whisper モデル本体は transformers.js が Cache Storage に保存するため

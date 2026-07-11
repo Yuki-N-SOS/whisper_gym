@@ -5,7 +5,7 @@
 import { normalize } from "./normalize";
 
 /** マッチ方法。UI 側で確認の強度を変えるために保持する */
-export type Confidence = "exact" | "alias" | "partial" | "fuzzy" | "none";
+export type Confidence = "exact" | "alias" | "partial" | "fuzzy" | "ambiguous" | "none";
 
 export interface ParsedSet {
   exerciseName: string | null;
@@ -13,6 +13,8 @@ export interface ParsedSet {
   reps: number | null;
   rawText: string;
   confidence: Confidence;
+  /** confidence が "ambiguous" のときの種目候補(それ以外は空配列)。確認 UI で選択させる */
+  candidates: string[];
 }
 
 export interface DictionaryEntry {
@@ -43,45 +45,66 @@ function levenshtein(a: string, b: string): number {
 interface Match {
   name: string;
   confidence: Confidence;
+  candidates: string[];
+}
+
+function noMatch(): Match {
+  return { name: "", confidence: "none", candidates: [] };
 }
 
 /**
  * 種目名候補を辞書に突き合わせる。
  * 完全一致 → 別名一致 → 部分一致 → あいまいマッチ(編集距離)の順でフォールバック。
+ * 部分一致・あいまいマッチで複数種目が同格の候補になった場合は 1 件を勝手に選ばず
+ * "ambiguous" として候補リストを返す(確認 UI で選択させる)。
  */
 function matchExercise(candidate: string, dictionary: DictionaryEntry[]): Match {
-  if (candidate.length === 0) return { name: "", confidence: "none" };
+  if (candidate.length === 0) return noMatch();
 
   for (const entry of dictionary) {
-    if (normalize(entry.name) === candidate) return { name: entry.name, confidence: "exact" };
+    if (normalize(entry.name) === candidate) {
+      return { name: entry.name, confidence: "exact", candidates: [] };
+    }
   }
   for (const entry of dictionary) {
     if (entry.aliases.some((a) => normalize(a) === candidate)) {
-      return { name: entry.name, confidence: "alias" };
+      return { name: entry.name, confidence: "alias", candidates: [] };
     }
   }
-  // 部分一致(2文字以上のときのみ。「ロー」等の短い別名の誤爆を防ぐ)
+  // 部分一致(3文字以上のときのみ。「ロー」等の短い別名の誤爆を防ぐ)
   if (candidate.length >= 3) {
+    const hits: string[] = [];
     for (const entry of dictionary) {
       const terms = [entry.name, ...entry.aliases].map(normalize).filter((t) => t.length >= 3);
       if (terms.some((t) => candidate.includes(t) || t.includes(candidate))) {
-        return { name: entry.name, confidence: "partial" };
+        hits.push(entry.name);
       }
     }
+    if (hits.length === 1) return { name: hits[0], confidence: "partial", candidates: [] };
+    if (hits.length > 1) return { name: "", confidence: "ambiguous", candidates: hits };
   }
-  // あいまいマッチ: 編集距離が文字数の 1/3 以内なら採用
-  let best: { name: string; dist: number } | null = null;
+  // あいまいマッチ: 編集距離が文字数の 1/3 以内なら採用。
+  // 最小距離の種目が複数あるときは ambiguous(同率 1 位を勝手に選ばない)
+  let bestDist = Infinity;
+  const bestNames: string[] = [];
   for (const entry of dictionary) {
+    let entryDist = Infinity;
     for (const term of [entry.name, ...entry.aliases]) {
-      const t = normalize(term);
-      const dist = levenshtein(candidate, t);
-      if (best === null || dist < best.dist) best = { name: entry.name, dist };
+      entryDist = Math.min(entryDist, levenshtein(candidate, normalize(term)));
+    }
+    if (entryDist < bestDist) {
+      bestDist = entryDist;
+      bestNames.length = 0;
+      bestNames.push(entry.name);
+    } else if (entryDist === bestDist) {
+      bestNames.push(entry.name);
     }
   }
-  if (best !== null && best.dist <= Math.max(1, Math.floor(candidate.length / 3))) {
-    return { name: best.name, confidence: "fuzzy" };
+  if (bestDist <= Math.max(1, Math.floor(candidate.length / 3))) {
+    if (bestNames.length === 1) return { name: bestNames[0], confidence: "fuzzy", candidates: [] };
+    return { name: "", confidence: "ambiguous", candidates: [...bestNames] };
   }
-  return { name: "", confidence: "none" };
+  return noMatch();
 }
 
 /**
@@ -105,10 +128,11 @@ export function parse(rawText: string, dictionary: DictionaryEntry[]): ParsedSet
 
   const match = matchExercise(candidate, dictionary);
   return {
-    exerciseName: match.confidence === "none" ? null : match.name,
+    exerciseName: match.name === "" ? null : match.name,
     weightKg,
     reps,
     rawText,
-    confidence: match.confidence
+    confidence: match.confidence,
+    candidates: match.candidates
   };
 }

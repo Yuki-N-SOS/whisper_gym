@@ -61,11 +61,13 @@ function toHalfWidth(text: string): string {
 /**
  * 正規化の入口。
  * - 全角→半角、漢数字→算用数字
+ * - 数字に挟まれた「点」「てん」→ 小数点(Whisper は「62点5キロ」と出すことがある)
  * - 英字は小文字化(KG → kg)
  * - 空白・句読点・記号を除去(小数点の "." は数値の一部なので残す)
  */
 export function normalize(text: string): string {
   return convertKanjiNumbers(toHalfWidth(text))
+    .replace(/(\d)(?:点|てん)(?=\d)/g, "$1.")
     .toLowerCase()
     .replace(/[\s、。,!?！？・…「」『』()（）]/g, "");
 }

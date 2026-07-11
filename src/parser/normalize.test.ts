@@ -28,6 +28,17 @@ describe("normalize", () => {
     expect(normalize("二点五キロ")).toBe("2.5キロ");
   });
 
+  it("算用数字+「点」の小数を変換する(Whisper の頻出パターン)", () => {
+    expect(normalize("62点5キロ")).toBe("62.5キロ");
+    expect(normalize("10てん5")).toBe("10.5");
+    expect(normalize("六十二点5キロ")).toBe("62.5キロ");
+  });
+
+  it("数字に挟まれていない「点」は変換しない", () => {
+    expect(normalize("3点セット")).toBe("3点セット");
+    expect(normalize("要点")).toBe("要点");
+  });
+
   it("数字を含まないテキストはそのまま", () => {
     expect(normalize("スクワット")).toBe("スクワット");
   });

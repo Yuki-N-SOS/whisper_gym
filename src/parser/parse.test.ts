@@ -42,6 +42,13 @@ describe("parse: 基本形", () => {
     expect(r.weightKg).toBe(62.5);
     expect(r.reps).toBe(10);
   });
+
+  it("算用数字+「点」の小数(62点5キロ → 62.5。以前は 5kg に誤変換されるバグ)", () => {
+    const r = parse("ベンチプレス 62点5キロ 10回", dict);
+    expect(r.exerciseName).toBe("ベンチプレス");
+    expect(r.weightKg).toBe(62.5);
+    expect(r.reps).toBe(10);
+  });
 });
 
 describe("parse: 自重種目・欠損フィールド", () => {
@@ -110,6 +117,36 @@ describe("parse: 別名・ゆらぎの吸収", () => {
   it("あいまいマッチ: 遠すぎる文字列は種目不明にする", () => {
     const r = parse("ジョギング 10回", dict);
     expect(r.exerciseName).toBeNull();
+  });
+});
+
+describe("parse: 複数候補(ambiguous)の検出", () => {
+  it("部分一致が複数種目にヒットしたら 1 件を選ばず候補を返す", () => {
+    // 「レッグ」はレッグプレス/レッグエクステンション/レッグカール/レッグレイズに部分一致する
+    const r = parse("レッグ 40キロ 12回", dict);
+    expect(r.exerciseName).toBeNull();
+    expect(r.confidence).toBe("ambiguous");
+    expect(r.candidates).toContain("レッグプレス");
+    expect(r.candidates).toContain("レッグカール");
+    expect(r.candidates.length).toBeGreaterThanOrEqual(2);
+    expect(r.weightKg).toBe(40);
+    expect(r.reps).toBe(12);
+  });
+
+  it("あいまいマッチで同距離の種目が複数あれば候補を返す", () => {
+    // 「カーウ」は「カール」(アームカール)とも「カーフ」(カーフレイズ)とも編集距離 1
+    const r = parse("カーウ 10キロ 10回", dict);
+    expect(r.exerciseName).toBeNull();
+    expect(r.confidence).toBe("ambiguous");
+    expect(r.candidates).toContain("アームカール");
+    expect(r.candidates).toContain("カーフレイズ");
+  });
+
+  it("部分一致が 1 件だけなら従来どおり partial(候補は空)", () => {
+    const r = parse("ベンチプレフ 60キロ 10回", dict);
+    expect(r.exerciseName).toBe("ベンチプレス");
+    expect(r.confidence).toBe("partial");
+    expect(r.candidates).toEqual([]);
   });
 });
 

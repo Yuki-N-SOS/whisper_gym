@@ -50,7 +50,7 @@ export const EXERCISE_SEED: ExerciseSeed[] = [
   { name: "トライセプスエクステンション", category: "腕", isBodyweight: false, aliases: ["フレンチプレス", "スカルクラッシャー"] },
   { name: "プレスダウン", category: "腕", isBodyweight: false, aliases: ["トライセプスプレスダウン", "ケーブルプレスダウン"] },
   // 体幹
-  { name: "プランク", category: "体幹", isBodyweight: true, aliases: [] },
+  // プランク等の時間ベース種目は MVP スコープ外(sets に秒数フィールドがないため。design.md §3)
   { name: "クランチ", category: "体幹", isBodyweight: true, aliases: [] },
   { name: "シットアップ", category: "体幹", isBodyweight: true, aliases: ["腹筋"] },
   { name: "レッグレイズ", category: "体幹", isBodyweight: true, aliases: [] },

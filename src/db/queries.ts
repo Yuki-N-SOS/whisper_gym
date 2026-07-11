@@ -1,6 +1,7 @@
 /**
  * DB アクセスの唯一の窓口。画面からはこのモジュールの関数だけを使う。
  */
+import Dexie from "dexie";
 import { EXERCISE_SEED } from "../parser/exercises";
 import type { DictionaryEntry } from "../parser/parse";
 import { db, type Exercise, type WorkoutSet } from "./db";
@@ -92,7 +93,10 @@ export async function listAllSets(): Promise<WorkoutSet[]> {
   return db.sets.orderBy("performedAt").reverse().toArray();
 }
 
-/** 同一種目の直近セット(前回参照 F5 用) */
+/** 同一種目の直近セット(前回参照 F5 用)。performedAt 順の最後(挿入順ではない) */
 export async function lastSetOfExercise(exerciseId: number): Promise<WorkoutSet | undefined> {
-  return db.sets.where("exerciseId").equals(exerciseId).last();
+  return db.sets
+    .where("[exerciseId+performedAt]")
+    .between([exerciseId, Dexie.minKey], [exerciseId, Dexie.maxKey])
+    .last();
 }

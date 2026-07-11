@@ -14,6 +14,7 @@ const CONFIDENCE_LABEL: Record<string, string> = {
   alias: "別名一致",
   partial: "部分一致",
   fuzzy: "あいまい一致(要確認)",
+  ambiguous: "候補が複数(要選択)",
   none: "種目不明"
 };
 
@@ -97,6 +98,9 @@ export function RecordScreen() {
               種目: <strong>{parsed.exerciseName ?? "不明"}</strong>{" "}
               <span className="muted">({CONFIDENCE_LABEL[parsed.confidence]})</span>
             </div>
+            {parsed.confidence === "ambiguous" && (
+              <div className="muted">候補: {parsed.candidates.join(" / ")}</div>
+            )}
             <div>重量: {parsed.weightKg !== null ? `${parsed.weightKg} kg` : "—"}</div>
             <div>回数: {parsed.reps !== null ? `${parsed.reps} 回` : "—"}</div>
             <button type="button" onClick={handleSave} disabled={!canSave}>
