@@ -178,6 +178,92 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+/* データ消失対策バナー */
+.banners {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.banner span {
+  flex: 1;
+}
+
+.banner-warn {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--card));
+}
+
+/* 種目管理画面 */
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exercise-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  background: none;
+  color: var(--text);
+  text-align: left;
+  border-radius: 0;
+}
+
+.alias-editor {
+  margin: 8px 0 4px;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.alias-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.alias-list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.chip-remove {
+  padding: 0 4px;
+  font-size: 0.9rem;
+  line-height: 1;
+  background: none;
+  color: var(--muted);
+  border-radius: 4px;
+}
+
 .tab-bar {
   position: fixed;
   bottom: 0;
