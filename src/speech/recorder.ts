@@ -31,18 +31,23 @@ export function pickRecordingMimeType(): string | null {
 }
 
 /**
+ * 録音時の音声制約(design.md §6・whisper-accuracy-requirements.md R-A1)。
+ * autoGainControl はささやき声の入力レベルを端末側で底上げするために有効化する。
+ * noiseSuppression がささやき声を削っていないかは R-A4(P2)で実機 A/B 検証する。
+ */
+export const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
+  channelCount: 1,
+  echoCancellation: true,
+  noiseSuppression: true,
+  autoGainControl: true
+};
+
+/**
  * 録音を開始する。stop() 呼び出しか MAX_RECORDING_MS 経過で終了し、
  * どちらの場合も onStop が呼ばれる。
- * ささやき声対策(design.md §6)として echoCancellation / noiseSuppression を有効にする。
  */
 export async function startRecording(onStop: (result: RecordingResult) => void): Promise<RecordingHandle> {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      channelCount: 1,
-      echoCancellation: true,
-      noiseSuppression: true
-    }
-  });
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: AUDIO_CONSTRAINTS });
 
   const mimeType = pickRecordingMimeType();
   const recorder = mimeType === null ? new MediaRecorder(stream) : new MediaRecorder(stream, { mimeType });
