@@ -10,6 +10,8 @@ import {
   loadDictionary
 } from "../db/queries";
 import { decodeToWhisperInput, startRecording, type RecordingHandle } from "../speech/recorder";
+import { prepareWhisperAudio } from "../speech/audio";
+import { stripHallucinations } from "../parser/hallucination";
 import { getLoadedModelId, loadModel, transcribe } from "../speech/transcriber";
 import { loadModelConfig } from "../speech/modelConfig";
 import { Reminders } from "../components/Reminders";
@@ -22,6 +24,9 @@ const CONFIDENCE_LABEL: Record<string, string> = {
   ambiguous: "候補が複数(要選択)",
   none: "種目不明"
 };
+
+/** 音量ゲート(R-B1)・全文幻覚(R-B2)で共通に出す再録音案内 */
+const TOO_QUIET_MESSAGE = "聞き取れませんでした。マイクに近づけてもう一度話すか、下の欄に入力してください";
 
 type ModelState = "unloaded" | "loading" | "ready";
 type RecordState = "idle" | "recording" | "transcribing";
@@ -95,12 +100,20 @@ export function RecordScreen() {
         setRecording(null);
         setRecordState("transcribing");
         try {
-          const { audio } = await decodeToWhisperInput(result.blob);
+          const decoded = await decodeToWhisperInput(result.blob);
+          // R-B1: 小さすぎる録音は推論に回さない(幻覚の主要な発生条件を断つ)
+          const { audio, tooQuiet } = prepareWhisperAudio(decoded.audio);
+          if (tooQuiet) {
+            setMessage(TOO_QUIET_MESSAGE);
+            return;
+          }
           const { text: recognized } = await transcribe(audio);
-          if (recognized === "") {
-            setMessage("うまく聞き取れませんでした。もう一度話すか、下の欄に入力してください");
+          // R-B2: 既知の幻覚フレーズを落としてから確認 UI に出す
+          const cleaned = stripHallucinations(recognized);
+          if (cleaned === "") {
+            setMessage(TOO_QUIET_MESSAGE);
           } else {
-            setText(recognized);
+            setText(cleaned);
             setMessage("認識しました。内容を確認して保存してください");
           }
         } catch (e) {

@@ -127,6 +127,21 @@
 - **目標(提案値・ユーザーと要合意)**: 無修正成功率 80% 以上、幻覚が確認 UI に到達する率 0%
 - 各要件の実装ごとに同一測定セットで前後比較し、結果を本書の末尾に追記する
 
-## 6. 測定記録
+## 6. 実装状況
+
+| 要件 | 状態 | 実装場所 |
+|---|---|---|
+| R-A1 自動ゲイン制御 | 実装済(2026-08-12) | `src/speech/recorder.ts` `AUDIO_CONSTRAINTS` |
+| R-A2 ピーク正規化 | 実装済(2026-08-12) | `src/speech/audio.ts` `normalizePeak` |
+| R-B1 RMS 音量ゲート | 実装済(2026-08-12)・**閾値は暫定値** | `src/speech/audio.ts` `SILENCE_RMS_THRESHOLD` = 0.005 |
+| R-B2 幻覚ブラックリスト | 実装済(2026-08-12) | `src/parser/hallucination.ts` |
+
+- 前処理の順序は `prepareWhisperAudio()` に集約(ゲート判定 → 正規化)。RecordScreen と
+  VerifyScreen の両方が同じ経路を通る
+- VerifyScreen の試行ログに録音の RMS を表示している。**実機のささやき声で RMS を確認し、
+  `SILENCE_RMS_THRESHOLD` を較正すること**(現状の 0.005 ≒ -46dBFS は机上の暫定値で未較正)
+- 受け入れ基準のうち実機比較(R-A1 の波形ピーク、R-A2 の認識結果の前後比較)は**未検証**
+
+## 7. 測定記録
 
 (実施後にここへ追記)

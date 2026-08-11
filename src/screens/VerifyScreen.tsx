@@ -9,6 +9,8 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { loadDictionary } from "../db/queries";
 import { parse } from "../parser/parse";
 import { decodeToWhisperInput, pickRecordingMimeType, startRecording, type RecordingHandle } from "../speech/recorder";
+import { prepareWhisperAudio, SILENCE_RMS_THRESHOLD } from "../speech/audio";
+import { stripHallucinations } from "../parser/hallucination";
 import { loadModel, transcribe, MODEL_PRESETS, DEFAULT_MODEL_ID, type Device, type Dtype } from "../speech/transcriber";
 import { isWebSpeechAvailable, startWebSpeech, type WebSpeechHandle } from "../speech/webSpeech";
 
@@ -19,6 +21,10 @@ interface TrialLog {
   audioMs: number | null;
   processMs: number;
   parsedSummary: string;
+  /** 正規化前の RMS(R-B1 の閾値を実機で較正するために表示する) */
+  rms: number | null;
+  /** 音量ゲート・幻覚除去が働いた場合の注記 */
+  note: string | null;
 }
 
 type ModelState = "unloaded" | "loading" | "ready";
@@ -56,7 +62,14 @@ export function VerifyScreen() {
 
   const modelId = modelChoice === "custom" ? customModelId.trim() : modelChoice;
 
-  function appendLog(engine: string, text: string, audioMs: number | null, processMs: number) {
+  function appendLog(
+    engine: string,
+    text: string,
+    audioMs: number | null,
+    processMs: number,
+    rms: number | null = null,
+    note: string | null = null
+  ) {
     const parsed = parse(text, dictionary);
     const parsedSummary =
       text === ""
@@ -65,7 +78,10 @@ export function VerifyScreen() {
           `${parsed.weightKg !== null ? `${parsed.weightKg}kg` : "—"} / ` +
           `${parsed.reps !== null ? `${parsed.reps}回` : "—"}`;
     logIdRef.current += 1;
-    setLogs((prev) => [{ id: logIdRef.current, engine, text, audioMs, processMs, parsedSummary }, ...prev]);
+    setLogs((prev) => [
+      { id: logIdRef.current, engine, text, audioMs, processMs, parsedSummary, rms, note },
+      ...prev
+    ]);
   }
 
   async function handleLoadModel() {
@@ -109,9 +125,30 @@ export function VerifyScreen() {
         recordingRef.current = null;
         setRecordState("transcribing");
         try {
-          const { audio, audioMs } = await decodeToWhisperInput(result.blob);
+          const decoded = await decodeToWhisperInput(result.blob);
+          // 本番(RecordScreen)と同じ前処理を通す: 音量ゲート → ピーク正規化
+          const { audio, rms, tooQuiet } = prepareWhisperAudio(decoded.audio);
+          if (tooQuiet) {
+            appendLog(
+              `Whisper (${modelId})`,
+              "",
+              decoded.audioMs,
+              0,
+              rms,
+              `音量ゲート(閾値 ${SILENCE_RMS_THRESHOLD})未満のため推論せず`
+            );
+            return;
+          }
           const { text, durationMs } = await transcribe(audio);
-          appendLog(`Whisper (${modelId})`, text, audioMs, durationMs);
+          const cleaned = stripHallucinations(text);
+          appendLog(
+            `Whisper (${modelId})`,
+            cleaned,
+            decoded.audioMs,
+            durationMs,
+            rms,
+            cleaned === text ? null : `幻覚除去: 元テキスト「${text}」`
+          );
         } catch (e) {
           setMessage(`認識失敗: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
@@ -257,9 +294,11 @@ export function VerifyScreen() {
                 <div className="muted">
                   {log.engine} / 処理 {formatSec(log.processMs)}
                   {log.audioMs !== null ? ` / 音声 ${formatSec(log.audioMs)}` : ""}
+                  {log.rms !== null ? ` / RMS ${log.rms.toFixed(4)}` : ""}
                 </div>
                 <div>「{log.text}」</div>
                 <div className="muted">{log.parsedSummary}</div>
+                {log.note !== null && <div className="muted">{log.note}</div>}
               </li>
             ))}
           </ul>
