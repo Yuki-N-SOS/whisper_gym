@@ -1,12 +1,14 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import uiCalibrator from "ui-calibrator/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   // GitHub Pages(サブパス配信)でも動くよう相対パスにする
   base: "./",
   plugins: [
+    uiCalibrator(),
     react(),
     VitePWA({
       registerType: "autoUpdate",

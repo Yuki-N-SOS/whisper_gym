@@ -4,6 +4,7 @@ dev-dist/
 *.local
 .vite/
 coverage/
+.uic-dev.*.log
 
 # エディタ・OS
 .DS_Store
