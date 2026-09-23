@@ -41,7 +41,7 @@
 
 ```
 whisper_gym/
-├── CLAUDE.md            # このファイル
+├── AGENTS.md            # このファイル
 ├── docs/
 │   ├── design.md        # 設計ドキュメント(仕様の一次情報源)
 │   └── roadmap.md       # 進め方・開発フェーズ・マイルストーン
